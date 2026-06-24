@@ -2,8 +2,8 @@ name: 분류 페이지 자동 동기화
 
 on:
   schedule:
-    # 매일 오전 7시 30분 (KST) = UTC 전날 22:30
-    - cron: "30 22 * * *"
+    # 매일 오전 9시 (KST) = UTC 00:00
+    - cron: "0 0 * * *"
   workflow_dispatch:  # 수동 실행 가능
 
 permissions:
