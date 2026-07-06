@@ -99,6 +99,21 @@ def get_available_dates():
     return sorted(set(re.findall(r'href="(\d{4}-\d{2}-\d{2})\.html"', html)))
 
 
+MAX_TITLE_LEN = 100
+
+
+def clean_title(title):
+    """소스 목록 페이지가 제목 대신 본문 문단을 통째로 넣어두는 경우가 있어,
+    지나치게 긴 텍스트는 첫 문장(또는 적당한 길이) 선에서 잘라낸다."""
+    title = title.strip()
+    if len(title) <= MAX_TITLE_LEN:
+        return title
+    first_sentence = re.split(r"(?<=[.!?다])\s", title)[0]
+    if len(first_sentence) <= MAX_TITLE_LEN:
+        return first_sentence
+    return title[:MAX_TITLE_LEN].rsplit(" ", 1)[0] + "…"
+
+
 def get_articles_for_date(date):
     html = fetch_html(f"{BASE_URL}{date}.html")
     if not html:
@@ -110,9 +125,10 @@ def get_articles_for_date(date):
         title_m = re.search(r'<a [^>]*>(.*?)</a>', li, re.DOTALL)
         cat_m   = re.search(r'<span[^>]*>([^<]+)</span>', li)
         if link_m and title_m:
+            raw_title = re.sub(r"<[^>]+>", "", title_m.group(1)).strip()
             articles.append({
                 "url":      BASE_URL + link_m.group(1),
-                "title":    re.sub(r"<[^>]+>", "", title_m.group(1)).strip(),
+                "title":    clean_title(raw_title),
                 "category": cat_m.group(1).strip() if cat_m else "",
                 "date":     date,
             })
